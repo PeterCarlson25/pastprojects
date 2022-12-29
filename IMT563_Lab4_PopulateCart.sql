@@ -1,5 +1,5 @@
---Create Database ajw_Lab4
-USE ajw_Lab4
+--Create Database PCarlson_Lab4
+USE PCarlson_Lab4
 
 --Creating relevant tables
 Create Table tblCUSTOMER (
@@ -59,7 +59,7 @@ VALUES
 GO
 
 --Procedures to get various IDs (Customer, ProductType, Product)
-Create Procedure ajwGetCustomerID
+Create Procedure pcGetCustomerID
 	@Fn varchar(30),
 	@Ln varchar(30),
 	@dob date,
@@ -68,14 +68,14 @@ AS
 Set @CID = (SELECT CustomerID FROM tblCUSTOMER WHERE @Fn=Fname AND @Ln=Lname AND @dob=BirthDate)
 GO
 
-Create Procedure ajwGetProductTypeID
+Create Procedure pcGetProductTypeID
 	@PTname varchar(30),
 	@PTID int OUTPUT
 AS
 Set @PTID = (SELECT ProductTypeID FROM tblPRODUCT_TYPE WHERE @PTname = ProductTypeName)
 GO
 
-Create Procedure ajwGetProductID
+Create Procedure pcGetProductID
 	@Pname varchar(30),
 	@PID int OUTPUT
 AS
@@ -83,14 +83,14 @@ Set @PID = (SELECT ProductID FROM tblPRODUCT WHERE @Pname = ProductName)
 GO
 
 --Procedure to populate Product table, with ProductType lookup
-Create Procedure ajwInsertProduct
+Create Procedure pcInsertProduct
 	@Pname varchar(50),
 	@PType varchar(30),
 	@Pr numeric(8,2),
 	@Pdesc varchar(500) = NULL
 AS
 Declare @PT_ID int
-EXEC ajwGetProductTypeID @PTname=@PType, @PTID=@PT_ID OUTPUT
+EXEC pcGetProductTypeID @PTname=@PType, @PTID=@PT_ID OUTPUT
 IF @PT_ID is NULL
 	BEGIN
 		Print 'No ProductType found by that name';
@@ -104,18 +104,18 @@ COMMIT Transaction insertProd
 GO
 
 --Brief break to populate the Product table
-EXEC ajwInsertProduct @Pname='Shirt', @PType='Fashion', @Pr=8.50
-EXEC ajwInsertProduct @Pname='Jeans', @PType='Fashion', @Pr=9.00
-EXEC ajwInsertProduct @Pname='Blender', @PType='Kitchen', @Pr=32.50
-EXEC ajwInsertProduct @Pname='Instant Pot', @PType='Kitchen', @Pr=65.50
-EXEC ajwInsertProduct @Pname='Blocks', @PType='Toys', @Pr=12.75
-EXEC ajwInsertProduct @Pname='Dolly', @PType='Toys', @Pr=8.25
-EXEC ajwInsertProduct @Pname='American Gods', @PType='Books', @Pr=11.00
-EXEC ajwInsertProduct @Pname='Life of Pi', @PType='Books', @Pr=9.50
+EXEC pcInsertProduct @Pname='Shirt', @PType='Fashion', @Pr=8.50
+EXEC pcInsertProduct @Pname='Jeans', @PType='Fashion', @Pr=9.00
+EXEC pcInsertProduct @Pname='Blender', @PType='Kitchen', @Pr=32.50
+EXEC pcInsertProduct @Pname='Instant Pot', @PType='Kitchen', @Pr=65.50
+EXEC pcInsertProduct @Pname='Blocks', @PType='Toys', @Pr=12.75
+EXEC pcInsertProduct @Pname='Dolly', @PType='Toys', @Pr=8.25
+EXEC pcInsertProduct @Pname='American Gods', @PType='Books', @Pr=11.00
+EXEC pcInsertProduct @Pname='Life of Pi', @PType='Books', @Pr=9.50
 GO
 
 --Procedure to populate tblCART, with lookups
-Create Procedure ajwAddToCart
+Create Procedure pcAddToCart
 	@CFn varchar(30),
 	@CLn varchar(30),
 	@Cdob date,
@@ -126,14 +126,14 @@ AS
 IF @date is NULL Set @date=GETDATE()
 Declare @P_ID int, @C_ID int
 
-EXEC ajwGetCustomerID @Fn=@CFn, @Ln=@CLn, @dob=@Cdob, @CID=@C_ID OUTPUT
+EXEC pcGetCustomerID @Fn=@CFn, @Ln=@CLn, @dob=@Cdob, @CID=@C_ID OUTPUT
 IF @C_ID is NULL
 	BEGIN
 		Print 'No customer found with those details';
 		Throw 55001, '@C_ID cannot be NULL; process terminating',1;
 	END
 
-EXEC ajwGetProductID @Pname=@Prod, @PID=@P_ID OUTPUT
+EXEC pcGetProductID @Pname=@Prod, @PID=@P_ID OUTPUT
 IF @P_ID is NULL
 	BEGIN
 		Print 'No product found by that name';
@@ -157,14 +157,14 @@ HINT: Obtain the new OrderID by using SCOPE_IDENTITY()
 7) Include nested transaction to manage the different steps as explained in lecture 
 	(remember: @@TRANCOUNT must be 1 when the final commit is issued). 
 */
-Create Procedure ajwCheckoutCart
+Create Procedure pcCheckoutCart
 	@CFn varchar(30),
 	@CLn varchar(30),
 	@Cdob date,
 	@Odate date
 AS
 Declare @CustID int
-EXEC ajwGetCustomerID @Fn=@CFn, @Ln=@CLn, @dob=@Cdob, @CID=@CustID OUTPUT
+EXEC pcGetCustomerID @Fn=@CFn, @Ln=@CLn, @dob=@Cdob, @CID=@CustID OUTPUT
 IF @CustID is NULL
 	BEGIN
 		Print 'No customer found with those details';
@@ -216,36 +216,36 @@ Life of Pi
 */
 
 /*
---EXEC ajwAddToCart @CFn='',@CLn='',@Cdob='',@Prod='',@Quant=
-EXEC ajwAddToCart @CFn='Karima',@CLn='Butterworth',@Cdob='1976-05-23',@Prod='Shirt',@Quant=2
-EXEC ajwAddToCart @CFn='Karima',@CLn='Butterworth',@Cdob='1976-05-23',@Prod='Blender',@Quant=1
-EXEC ajwAddToCart @CFn='Karima',@CLn='Butterworth',@Cdob='1976-05-23',@Prod='Dolly',@Quant=3
-EXEC ajwAddToCart @CFn='Karima',@CLn='Butterworth',@Cdob='1976-05-23',@Prod='Jeans',@Quant=1
-EXEC ajwAddToCart @CFn='Karima',@CLn='Butterworth',@Cdob='1976-05-23',@Prod='Shirt',@Quant=1 --See if this works in final order
+--EXEC pcAddToCart @CFn='',@CLn='',@Cdob='',@Prod='',@Quant=
+EXEC pcAddToCart @CFn='Karima',@CLn='Butterworth',@Cdob='1976-05-23',@Prod='Shirt',@Quant=2
+EXEC pcAddToCart @CFn='Karima',@CLn='Butterworth',@Cdob='1976-05-23',@Prod='Blender',@Quant=1
+EXEC pcAddToCart @CFn='Karima',@CLn='Butterworth',@Cdob='1976-05-23',@Prod='Dolly',@Quant=3
+EXEC pcAddToCart @CFn='Karima',@CLn='Butterworth',@Cdob='1976-05-23',@Prod='Jeans',@Quant=1
+EXEC pcAddToCart @CFn='Karima',@CLn='Butterworth',@Cdob='1976-05-23',@Prod='Shirt',@Quant=1 --See if this works in final order
 
-EXEC ajwAddToCart @CFn='Lessie',@CLn='Fevold',@Cdob='1972-04-06',@Prod='Jeans',@Quant=2
-EXEC ajwAddToCart @CFn='Lessie',@CLn='Fevold',@Cdob='1972-04-06',@Prod='Shirt',@Quant=2
-EXEC ajwAddToCart @CFn='Lessie',@CLn='Fevold',@Cdob='1972-04-06',@Prod='American Gods',@Quant=1
+EXEC pcAddToCart @CFn='Lessie',@CLn='Fevold',@Cdob='1972-04-06',@Prod='Jeans',@Quant=2
+EXEC pcAddToCart @CFn='Lessie',@CLn='Fevold',@Cdob='1972-04-06',@Prod='Shirt',@Quant=2
+EXEC pcAddToCart @CFn='Lessie',@CLn='Fevold',@Cdob='1972-04-06',@Prod='American Gods',@Quant=1
 
-EXEC ajwAddToCart @CFn='Sharyn',@CLn='Bednarczyk',@Cdob='1994-03-19',@Prod='Life of Pi',@Quant=2
-EXEC ajwAddToCart @CFn='Sharyn',@CLn='Bednarczyk',@Cdob='1994-03-19',@Prod='Dolly',@Quant=1
-EXEC ajwAddToCart @CFn='Sharyn',@CLn='Bednarczyk',@Cdob='1994-03-19',@Prod='Instant Pot',@Quant=1
-EXEC ajwAddToCart @CFn='Sharyn',@CLn='Bednarczyk',@Cdob='1994-03-19',@Prod='Jeans',@Quant=1
+EXEC pcAddToCart @CFn='Sharyn',@CLn='Bednarczyk',@Cdob='1994-03-19',@Prod='Life of Pi',@Quant=2
+EXEC pcAddToCart @CFn='Sharyn',@CLn='Bednarczyk',@Cdob='1994-03-19',@Prod='Dolly',@Quant=1
+EXEC pcAddToCart @CFn='Sharyn',@CLn='Bednarczyk',@Cdob='1994-03-19',@Prod='Instant Pot',@Quant=1
+EXEC pcAddToCart @CFn='Sharyn',@CLn='Bednarczyk',@Cdob='1994-03-19',@Prod='Jeans',@Quant=1
 
-EXEC ajwAddToCart @CFn='Lessie',@CLn='Fevold',@Cdob='1972-04-06',@Prod='Jeans',@Quant=1 --See if this works in final order
+EXEC pcAddToCart @CFn='Lessie',@CLn='Fevold',@Cdob='1972-04-06',@Prod='Jeans',@Quant=1 --See if this works in final order
 
-EXEC ajwAddToCart @CFn='Lessie',@CLn='Fevold',@Cdob='1972-04-06',@Prod='Jeanzz',@Quant=2 --Shouldn't work (not a right product)
-EXEC ajwAddToCart @CFn='Lexxie',@CLn='Fexxold',@Cdob='1972-04-06',@Prod='Jeans',@Quant=2 --Shouldn't work (not a right customer)
+EXEC pcAddToCart @CFn='Lessie',@CLn='Fevold',@Cdob='1972-04-06',@Prod='Jeanzz',@Quant=2 --Shouldn't work (not a right product)
+EXEC pcAddToCart @CFn='Lexxie',@CLn='Fexxold',@Cdob='1972-04-06',@Prod='Jeans',@Quant=2 --Shouldn't work (not a right customer)
 
 SELECT * from tblCART ca
 	join tblCUSTOMER cu on cu.CustomerID=ca.CustomerID
 	join tblPRODUCT p on p.ProductID = ca.ProductID
 
 --DECLARE @today date = GetDate()
-EXEC ajwCheckoutCart @CFn='Karima',@CLn='Butterworth',@Cdob='1976-05-23', @Odate='2022-04-23'
-EXEC ajwCheckoutCart @CFn='Lessie',@CLn='Fevold',@Cdob='1972-04-06', @Odate = '2022-04-25' --@today
+EXEC pcCheckoutCart @CFn='Karima',@CLn='Butterworth',@Cdob='1976-05-23', @Odate='2022-04-23'
+EXEC pcCheckoutCart @CFn='Lessie',@CLn='Fevold',@Cdob='1972-04-06', @Odate = '2022-04-25' --@today
 
-EXEC ajwCheckoutCart @CFn='Sharyynxx',@CLn='Bednarczyk',@Cdob='1994-03-19', @Odate='2022-04-24' --Shouldn't work (not a right customer)
+EXEC pcCheckoutCart @CFn='Sharyynxx',@CLn='Bednarczyk',@Cdob='1994-03-19', @Odate='2022-04-24' --Shouldn't work (not a right customer)
 
 Select OrderDate, Fname, ProductName, Quantity 
 	from tblORDER o
